@@ -1,3 +1,3 @@
-module rotatelogs
+module github.com/duanhf2012/rotatelogs
 
-go 1.23.3
+go 1.22
