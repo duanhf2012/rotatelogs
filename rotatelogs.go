@@ -13,7 +13,8 @@ import (
 
 type rotateConfig struct {
 	fileBasePath       string
-	fileDateTimeLayout string
+	fileBaseName 	   string
+	suffixFileDateTimeLayout string
 
 	maxAge time.Duration
 	maxNum int
@@ -157,7 +158,7 @@ func (rl *RotateLogs) setDefaultConfig() {
 }
 
 func (rl *RotateLogs) getFileName() string {
-	return filepath.Join(rl.fileBasePath, time.Now().Format(rl.fileDateTimeLayout)+rl.fileExt)
+	return filepath.Join(rl.fileBasePath,rl.fileBaseName+ time.Now().Format(rl.suffixFileDateTimeLayout)+rl.fileExt)
 }
 
 func (rl *RotateLogs) removeFile(files []string) {
@@ -273,7 +274,7 @@ func (rl *RotateLogs) isChangeDay() bool {
 		time.Now().Day() != rl.currFileDate.Day()
 }
 
-func NewRotateLogs(basePath string, fileDateTimeLayout string, options ...Option) (*RotateLogs, error) {
+func NewRotateLogs(basePath string, baseFileName string,suffixFileDateTimeLayout string, options ...Option) (*RotateLogs, error) {
 	dir, err := os.Stat(basePath)
 	if err != nil || dir.IsDir() == false {
 		return nil, errors.New("Not found dir " + basePath)
@@ -281,14 +282,16 @@ func NewRotateLogs(basePath string, fileDateTimeLayout string, options ...Option
 
 	rl := &RotateLogs{}
 	rl.fileBasePath = basePath
+	rl.fileBaseName = baseFileName
+	rl.suffixFileDateTimeLayout = suffixFileDateTimeLayout
 
-	err = checkFileNameDateTimeLayout(filepath.Base(fileDateTimeLayout))
+	err = checkFileNameDateTimeLayout(filepath.Base(suffixFileDateTimeLayout))
 	if err != nil {
 		return nil, err
 	}
 
-	rl.fileExt = filepath.Ext(fileDateTimeLayout)
-	rl.fileDateTimeLayout = strings.TrimRight(fileDateTimeLayout, rl.fileExt)
+	rl.fileExt = filepath.Ext(suffixFileDateTimeLayout)
+	rl.suffixFileDateTimeLayout = strings.TrimRight(suffixFileDateTimeLayout, rl.fileExt)
 
 	for _, option := range options {
 		option.Configure(rl)
